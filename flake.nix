@@ -17,6 +17,8 @@
           inherit system;
           overlays = [(import rust-overlay)];
         };
+
+        manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -25,8 +27,8 @@
         };
 
         packages.default = pkgs.rustPlatform.buildRustPackage rec {
-          pname = "rnote-export";
-          version = "1.0.0";
+          pname = manifest.name;
+          version = manifest.version;
           cargoLock.lockFile = ./Cargo.lock;
           src = pkgs.lib.cleanSource ./.;
         };

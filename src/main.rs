@@ -1,19 +1,18 @@
 use std::{
-    fs::{self, create_dir_all, write},
+    fs::{self, create_dir_all},
     path::PathBuf,
     process::{Command, Stdio},
     time::{Duration, SystemTime},
 };
 
-use clap::{Parser, Subcommand, ValueHint};
+use clap::{Parser, ValueHint};
 use glob::glob;
-use serde::{Deserialize, Serialize};
-use toml::value::Time;
 
 #[derive(Parser, Debug)]
 pub struct Cli {
     #[arg(value_hint = ValueHint::DirPath)]
     directory: PathBuf,
+
     include: String,
 
     cache_dir: PathBuf,
@@ -21,10 +20,6 @@ pub struct Cli {
 
 fn main() {
     let cli = Cli::parse();
-    //cli.directory = cli.directory.canonicalize().unwrap();
-    //cli.cache_dir = cli.cache_dir.canonicalize().unwrap();
-
-    let cli = dbg!(cli);
 
     let a = cli.directory.join(cli.include).to_owned();
     let entries = glob(a.to_str().unwrap()).expect("Shit hit the fan");
@@ -84,21 +79,4 @@ fn main() {
             Err(_) => todo!(),
         }
     }
-
-    //let pase = BringCollection {
-    //    sakes: vec![Bring {
-    //        name: "rust cargo".to_string(),
-    //        pryles: vec![BringFile {
-    //            file_path: "./flake.nix".into(),
-    //            create_option: CreateOption::Quit,
-    //        }],
-    //    }],
-    //};
-    //
-    //write("pase.toml", toml::to_string(&pase).unwrap()).unwrap();
-    //
-    //let pb = PathBuf::from("./hejsan");
-    //
-    //dbg!(pb);
-    //println!("Hello, world!");
 }
