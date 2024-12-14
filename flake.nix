@@ -10,7 +10,7 @@
       };
     };
   };
-  outputs = {nixpkgs, flake-utils, rust-overlay, ...}@inputs: 
+  outputs = {self, nixpkgs, flake-utils, rust-overlay, lib, config, ...}@inputs: 
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -31,6 +31,17 @@
           version = manifest.version;
           cargoLock.lockFile = ./Cargo.lock;
           src = pkgs.lib.cleanSource ./.;
+        };
+
+        nixosModules.default = {
+          options.rnote_export.enable = lib.mkEnableOption "Enable rnote_export module";
+
+          config = lib.mkIf config.rnote_export {
+
+            environment.systemPackages = [
+              self.packages.default
+            ];
+          };
         };
       });
 }
