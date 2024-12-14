@@ -10,9 +10,10 @@
       };
     };
   };
-  outputs = {self, nixpkgs, flake-utils, rust-overlay, lib, config, ...}@inputs: 
+  outputs = {self, nixpkgs, flake-utils, rust-overlay}@inputs: 
     flake-utils.lib.eachDefaultSystem (system:
       let
+        inherit (nixpkgs) lib;
         pkgs = import nixpkgs {
           inherit system;
           overlays = [(import rust-overlay)];
@@ -36,12 +37,12 @@
         nixosModules.default = {
           options.rnote_export.enable = lib.mkEnableOption "Enable rnote_export module";
 
-          config = lib.mkIf config.rnote_export {
+          config = lib.mkIf nixpkgs.config.rnote_export {
 
             environment.systemPackages = [
               self.packages.default
             ];
           };
         };
-      });
+    });
 }
