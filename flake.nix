@@ -33,16 +33,15 @@
           cargoLock.lockFile = ./Cargo.lock;
           src = pkgs.lib.cleanSource ./.;
         };
+        nixosModules.default = {config, pkg, lib, ...}: {
+          options.services.rnote-export.enable = lib.mkEnableOption "Enable rnote_export module";
 
-        nixosModules.default = {
-          options.rnote_export.enable = lib.mkEnableOption "Enable rnote_export module";
-
-          config = lib.mkIf nixpkgs.config.rnote_export {
-
+          config = lib.mkIf config.services.rnote-export.enable {
             environment.systemPackages = [
-              self.packages.default
+              self.packages.${system}.default
             ];
           };
         };
+
     });
 }
