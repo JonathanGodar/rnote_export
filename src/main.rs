@@ -13,15 +13,19 @@ pub struct Cli {
     #[arg(value_hint = ValueHint::DirPath)]
     directory: PathBuf,
 
-    include: String,
-
     cache_dir: PathBuf,
+
+    include: Option<String>,
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    let a = cli.directory.join(cli.include).to_owned();
+    let a = cli
+        .directory
+        .join(cli.include.unwrap_or("**".to_string()))
+        .to_owned();
+
     let entries = glob(a.to_str().unwrap()).expect("Shit hit the fan");
 
     println!("{:?}", entries.count());
