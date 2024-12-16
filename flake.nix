@@ -32,16 +32,29 @@
           version = manifest.version;
           cargoLock.lockFile = ./Cargo.lock;
           src = pkgs.lib.cleanSource ./.;
+
+          # Neither of these two work?
+          buildInputs = [pkgs.rnote];
+          propagatedBuildInputs = [pkgs.rnote];
         };
+
         nixosModules.default = {config, pkg, lib, ...}: let
           cfg = config.services.rnote-export;
 
-          defaultUser = "rnote-export";
-          defaultGroup = defaultUser;
           defaultOutputDirectory = "/var/lib/rnote-export";
           in {
             options.services.rnote-export = {
               enable = lib.mkEnableOption "Enable rnote_export module";
+
+              user = lib.mkOption {
+                type = lib.types.str;
+                description = "User to run rnote export as";
+              };
+
+              group = lib.mkOption {
+                type = lib.types.str;
+                description = "Group to run rnote export as";
+              };
 
               inputDirectory = lib.mkOption {
                 type = lib.types.path;
@@ -66,21 +79,19 @@
                   self.packages.${system}.default
                 ];
 
-                users.users.${defaultUser} = {
-                  isSystemUser = true;
-                  # isNormalUser = true;
-                  group = defaultGroup;
-                  # Make rnote-export command available for the borg user
-                  packages = [self.packages.${system}.default];
-                  extraGroups = ["users"];
+                systemd.tmpfiles.settings.rnote-export.${cfg.outputDirectory}.d = {
+                  group = cfg.group;
+                  user = cfg.user;
+                  mode = "0755";
                 };
 
-                users.groups.${defaultGroup} = {};
-
-                systemd.tmpfiles.settings.rnote-export.${cfg.outputDirectory}.d = {
-                  group = defaultGroup;
-                  user = defaultUser;
-                  mode = "0755";
+                systemd.timers."rnote-export" = {
+                  wantedBy = [ "timers.target" ];
+                  timerConfig = {
+                    OnBootSec = "1m";
+                    OnUnitInactiveSec = "30m";
+                    Unit = "rnote-export.service";
+                  };
                 };
 
                 systemd.services.rnote-export = {
@@ -88,13 +99,13 @@
 
                   wantedBy = [ "multi-user.target" ];
                   # Make rnote-export available for the systemd service
-                  path = [self.packages.${system}.default];
+                  path = [self.packages.${system}.default pkgs.rnote];
 
                   serviceConfig = {
                     ExecStart = "${self.packages.${system}.default}/bin/rnote-export \"${cfg.inputDirectory}\" \"${cfg.outputDirectory}\" \"${cfg.includeString}\"";
-                    User=defaultUser;
+                    User=cfg.user;
+                    Group=cfg.group;
                   };
-                
                 };
               };
         };

@@ -68,15 +68,20 @@ fn main() {
 
                 println!("{:?}", of.parent().unwrap());
                 create_dir_all(of.parent().unwrap()).unwrap();
+                println!("creating following dir:  {:?} ", of.parent().unwrap());
+                println!("Starting to export:  {:?} ", path.to_str());
+
+                let of = of.to_str().unwrap();
+                let input_file = path.to_str().unwrap();
                 let mut cmd = Command::new("rnote-cli")
                     .args([
                         "export",
                         "selection",
                         "--output-file",
-                        of.to_str().unwrap(),
+                        of,
                         "all",
                         //"-overwrite",
-                        path.to_str().unwrap(),
+                        input_file,
                     ])
                     .stdout(Stdio::inherit())
                     .stderr(Stdio::inherit())
