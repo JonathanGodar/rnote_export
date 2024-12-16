@@ -21,13 +21,18 @@ pub struct Cli {
 fn main() {
     let cli = Cli::parse();
 
+    println!("include {:?}", cli.include);
+
     let a = cli
         .directory
         .join(cli.include.unwrap_or("**".to_string()))
         .to_owned();
 
+    println!("To search {:?}", a);
+
     let entries = glob(a.to_str().unwrap()).expect("Shit hit the fan");
 
+    println!("Directory: {:?}", cli.directory);
     println!("{:?}", entries.count());
 
     for entry in glob(a.to_str().unwrap()).expect("Shit hit the fan") {
